@@ -48,58 +48,94 @@
     </div>
 
     <script>
+        document.addEventListener('DOMContentLoaded', loadPosts);
+
+        function loadPosts() {
+            const posts = JSON.parse(localStorage.getItem('posts')) || [];
+            posts.forEach(post => renderPost(post));
+        }
+
+        function savePosts(posts) {
+            localStorage.setItem('posts', JSON.stringify(posts));
+        }
+
         function addPost() {
             const postTitle = document.getElementById('postTitle').value;
             const postContent = document.getElementById('postContent').value;
             
             if (postTitle && postContent) {
-                const postsDiv = document.getElementById('posts');
-                
-                const postDiv = document.createElement('div');
-                postDiv.classList.add('post');
-                
-                const postTitleDiv = document.createElement('div');
-                postTitleDiv.classList.add('post-title');
-                postTitleDiv.innerText = postTitle;
-                
-                const postContentDiv = document.createElement('div');
-                postContentDiv.classList.add('post-content');
-                postContentDiv.innerText = postContent;
-                
-                const commentForm = document.createElement('div');
-                commentForm.classList.add('comment-form');
-                
-                const commentInput = document.createElement('input');
-                commentInput.type = 'text';
-                commentInput.placeholder = '댓글 작성';
-                commentInput.classList.add('comment-input');
-                
-                const commentButton = document.createElement('button');
-                commentButton.innerText = '댓글 달기';
-                commentButton.onclick = () => addComment(postDiv, commentInput.value);
-                
-                commentForm.appendChild(commentInput);
-                commentForm.appendChild(commentButton);
-                
-                postDiv.appendChild(postTitleDiv);
-                postDiv.appendChild(postContentDiv);
-                postDiv.appendChild(commentForm);
-                
-                postsDiv.appendChild(postDiv);
+                const post = {
+                    title: postTitle,
+                    content: postContent,
+                    comments: []
+                };
+
+                const posts = JSON.parse(localStorage.getItem('posts')) || [];
+                posts.push(post);
+                savePosts(posts);
+                renderPost(post);
                 
                 document.getElementById('postTitle').value = '';
                 document.getElementById('postContent').value = '';
             }
         }
-        
-        function addComment(postDiv, commentText) {
+
+        function renderPost(post) {
+            const postsDiv = document.getElementById('posts');
+            
+            const postDiv = document.createElement('div');
+            postDiv.classList.add('post');
+            
+            const postTitleDiv = document.createElement('div');
+            postTitleDiv.classList.add('post-title');
+            postTitleDiv.innerText = post.title;
+            
+            const postContentDiv = document.createElement('div');
+            postContentDiv.classList.add('post-content');
+            postContentDiv.innerText = post.content;
+            
+            const commentForm = document.createElement('div');
+            commentForm.classList.add('comment-form');
+            
+            const commentInput = document.createElement('input');
+            commentInput.type = 'text';
+            commentInput.placeholder = '댓글 작성';
+            commentInput.classList.add('comment-input');
+            
+            const commentButton = document.createElement('button');
+            commentButton.innerText = '댓글 달기';
+            commentButton.onclick = () => {
+                addComment(postDiv, commentInput.value, post);
+                commentInput.value = '';
+            };
+            
+            commentForm.appendChild(commentInput);
+            commentForm.appendChild(commentButton);
+            
+            postDiv.appendChild(postTitleDiv);
+            postDiv.appendChild(postContentDiv);
+            postDiv.appendChild(commentForm);
+
+            post.comments.forEach(comment => renderComment(postDiv, comment));
+
+            postsDiv.appendChild(postDiv);
+        }
+
+        function addComment(postDiv, commentText, post) {
             if (commentText) {
-                const commentDiv = document.createElement('div');
-                commentDiv.classList.add('comment');
-                commentDiv.innerText = commentText;
-                
-                postDiv.appendChild(commentDiv);
+                post.comments.push(commentText);
+                savePosts(JSON.parse(localStorage.getItem('posts')));
+
+                renderComment(postDiv, commentText);
             }
+        }
+
+        function renderComment(postDiv, commentText) {
+            const commentDiv = document.createElement('div');
+            commentDiv.classList.add('comment');
+            commentDiv.innerText = commentText;
+            
+            postDiv.appendChild(commentDiv);
         }
     </script>
 </body>
